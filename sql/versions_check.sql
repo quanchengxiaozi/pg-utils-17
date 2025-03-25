@@ -1,29 +1,27 @@
-select case when setting::bigint < 90400 
-              then 'Вы используете старую версию PostgreSQL, которая более не поддерживается сообществом.'||chr(10)||
-                   'Рекомендуем вам перейти на последнюю актуальную версию как можно скорее.'
-            when setting::bigint < 90500
-              then 'Вы используете старую версию PostgreSQL, которая пока что поддерживается сообществом.'||chr(10)||
-                   'Рекомендуем вам перейти на последнюю актуальную версию.'
-            when setting::bigint < 90600
-              then 'Вы используете достаточно современную версию PostgreSQL, которая активно поддерживается сообществом.'||chr(10)||
-                   'У вас все неплохо, но можно обновиться и на последнюю актуальную версию при возможности.'
-            when setting::bigint < 120000
-              then 'Вы пользуетесь одной из самых последних версий PostgreSQL.'||chr(10)||
-                   'У вас все отлично.'
-            else 'Вы используете версию которая находится в разработке,'||chr(10)||
-                 'если это production, то рекомендуем вам перейти на стабильную версию PostgreSQL.'
-       end as "Проверка мажорной версии PostgreSQL"
-     , case when setting::bigint between 110003 and 119999 or 
-                 setting::bigint between 100008 and 109999 or 
-                 setting::bigint between 90613 and 90699 or 
-                 setting::bigint between 90517 and 90599 or 
-                 setting::bigint between 90422 and 90499
-              then 'У вас стоит один из последних патчей PostgreSQL для вашей версии.'||chr(10)||
-                   'Похоже вы следите за обновлениями PostgreSQL. Это хороший факт.'
-            else 'Похоже вы не обновляли PostgreSQL, после установки/последнего мажорного обновления, совсем.'||chr (10)||
-                 'Это плохо, рекомендуем вам обновиться до последней актуальной версии PostgreSQL.'
-       end as "Проверка минорной версии PostgreSQL"
-     , 'Актуальные версии на данный момент следующие, в порядке убывания актуальности:'||chr (10)||
-       '11.4, 10.9, 9.6.14, 9.5.18, 9.4.23' as "Список актуальных версий"
-  from pg_settings
- where name = 'server_version_num';
+SELECT
+    CASE WHEN setting::bigint < 90400 THEN
+        'You are using an old version of PostgreSQL, which is no longer supported by the community.' || chr(10) || 'We recommend you upgrade to the latest version as soon as possible.'
+    WHEN setting::bigint < 90500 THEN
+        'You are using an old version of PostgreSQL, which is still supported by the community.' || chr(10) || 'We recommend you upgrade to the latest version.'
+    WHEN setting::bigint < 90600 THEN
+        'You are using a relatively modern version of PostgreSQL, which is actively supported by the community.' || chr(10) || 'You are doing well, but you can update to the latest version if possible.'
+    WHEN setting::bigint < 170400 THEN
+        'You are using one of the latest versions of PostgreSQL.' || chr(10) || 'Everything is great.'
+    ELSE
+        'You are using a version that is in development,' || chr(10) || 'if this is production, we recommend you switch to a stable version of PostgreSQL.'
+    END AS "Major PostgreSQL Version Check",
+    CASE WHEN setting::bigint BETWEEN 170004 AND 170399
+        OR setting::bigint BETWEEN 110003 AND 119999
+        OR setting::bigint BETWEEN 100008 AND 109999
+        OR setting::bigint BETWEEN 90613 AND 90699
+        OR setting::bigint BETWEEN 90517 AND 90599
+        OR setting::bigint BETWEEN 90422 AND 90499 THEN
+        'You have one of the latest patches of PostgreSQL for your version.' || chr(10) || 'It looks like you are keeping up with PostgreSQL updates. This is a good fact.'
+    ELSE
+        'It looks like you have not updated PostgreSQL since installation/last major update at all.' || chr(10) || 'This is bad, we recommend you update to the latest version of PostgreSQL.'
+    END AS "Minor PostgreSQL Version Check",
+    'The current versions at the moment are as follows, in descending order of relevance:' || chr(10) || '17.4, 11.4, 10.9, 9.6.14, 9.5.18, 9.4.23' AS "List of Current Versions"
+FROM
+    pg_settings
+WHERE
+    name = 'server_version_num';
